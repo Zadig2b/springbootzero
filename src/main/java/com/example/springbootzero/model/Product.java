@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Représente un produit simple ou un bundle de produits")
 @Entity
 public class Product {
 
@@ -14,6 +17,7 @@ public class Product {
     private String name;
     private double price;
 
+    @Schema(description = "Liste des produits sources (en cas de bundle)", implementation = Product.class)
     @ManyToMany
     @JoinTable(
         name = "product_sources",

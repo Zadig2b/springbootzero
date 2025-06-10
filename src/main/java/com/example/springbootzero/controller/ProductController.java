@@ -1,11 +1,15 @@
 package com.example.springbootzero.controller;
 
+import com.example.springbootzero.dto.ProductRequestDto;
 import com.example.springbootzero.model.Product;
 import com.example.springbootzero.repository.ProductRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+@Tag(name = "Product API", description = "Opérations CRUD sur les produits")
 @RestController
 @RequestMapping("/products")
 public class ProductController {
@@ -16,40 +20,43 @@ public class ProductController {
         this.repository = repository;
     }
 
-    // GET /products
+    @Operation(summary = "Lister tous les produits")
     @GetMapping
     public List<Product> getAll() {
         return repository.findAll();
     }
 
-    // GET /products/{id}
+    @Operation(summary = "Récupérer un produit par ID")
     @GetMapping("/{id}")
     public Product getById(@PathVariable Long id) {
         return repository.findById(id).orElseThrow();
     }
 
-    // POST /products
+    @Operation(summary = "Créer un nouveau produit")
     @PostMapping
-    public Product create(@RequestBody Product product) {
+    public Product create(@RequestBody ProductRequestDto dto) {
+        Product product = new Product();
+        product.setName(dto.getName());
+        product.setPrice(dto.getPrice());
         return repository.save(product);
     }
 
-    // PUT /products/{id}
+    @Operation(summary = "Mettre à jour un produit existant")
     @PutMapping("/{id}")
-    public Product update(@PathVariable Long id, @RequestBody Product product) {
+    public Product update(@PathVariable Long id, @RequestBody ProductRequestDto dto) {
         Product existing = repository.findById(id).orElseThrow();
-        existing.setName(product.getName());
-        existing.setPrice(product.getPrice());
+        existing.setName(dto.getName());
+        existing.setPrice(dto.getPrice());
         return repository.save(existing);
     }
 
-    // DELETE /products/{id}
+    @Operation(summary = "Supprimer un produit")
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         repository.deleteById(id);
     }
 
-    // POST /products/{id}/duplicate
+    @Operation(summary = "Dupliquer un produit existant")
     @PostMapping("/{id}/duplicate")
     public Product duplicate(@PathVariable Long id) {
         Product original = repository.findById(id).orElseThrow();
@@ -59,7 +66,7 @@ public class ProductController {
         return repository.save(copy);
     }
 
-    // POST /products/bundle
+    @Operation(summary = "Créer un bundle de produits (avec protection contre les cycles)")
     @PostMapping("/bundle")
     public Product createBundle(@RequestBody List<Long> sourceIds) {
         Set<Long> visited = new HashSet<>();
@@ -77,7 +84,7 @@ public class ProductController {
             totalPrice += p.getPrice();
         }
 
-        String bundleName = nameBuilder.substring(0, nameBuilder.length() - 3); // remove last " + "
+        String bundleName = nameBuilder.substring(0, nameBuilder.length() - 3); // supprime le dernier " + "
         Product bundle = new Product();
         bundle.setName(bundleName);
         bundle.setPrice(totalPrice);
